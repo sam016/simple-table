@@ -16,6 +16,7 @@ window.addEventListener('load', function () {
       {
         label: 'Name',
         key: 'name',
+        sortable: true,
       },
       {
         label: 'Native name',
@@ -24,18 +25,22 @@ window.addEventListener('load', function () {
       {
         label: 'Capital',
         key: 'capital',
+        sortable: true,
       },
       {
         label: 'Region',
         key: 'region',
+        sortable: true,
       },
       {
         label: 'Population',
         key: 'population',
+        sortable: true,
       },
       {
         label: 'Lat/Lng',
         key: 'latlng',
+        sortable: true,
       },
       {
         label: 'Timezones',

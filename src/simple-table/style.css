@@ -7,3 +7,20 @@
   border: 1px solid black;
   padding: 0.2rem 0.5rem;
 }
+
+.simple-table th.sortable{
+  background-image: url('./images/sortable.svg');
+  background-repeat: no-repeat;
+  background-position: right;
+  background-size: 1rem;
+  padding-right: 1.5rem;
+  cursor: pointer;
+}
+
+.simple-table th.sortable--asc{
+  background-image: url('./images/sortable-asc.svg');
+}
+
+.simple-table th.sortable--desc{
+  background-image: url('./images/sortable-desc.svg');
+}

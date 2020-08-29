@@ -18,6 +18,9 @@
     2: 'desc',
   };
 
+  var SORT_ORDER_ASC = 1;
+  var SORT_ORDER_DESC = 2;
+
   function SimpleTable(element, data, config) {
     if (!element || !data || !Array.isArray(data)) {
       throw new Error('Invalid arguments');
@@ -39,6 +42,7 @@
       totalCount: 0,
       canNavigatePrev: false,
       canNavigateNext: false,
+      data: [],
       // columns: [],
 
       sortColumns: {},
@@ -69,6 +73,7 @@
       _state.totalPages = Math.ceil(data.length / _config.perPageLimit);
       _state.canNavigatePrev = false;
       _state.canNavigateNext = _state.totalPages > 1;
+      _state.data = data;
     }
 
     // Creates the DOM elements and attaches events
@@ -89,7 +94,11 @@
 
         eleCol.innerHTML = _config.columns[indCol].label;
         eleCol.dataset.index = indCol;
-        eleCol.addEventListener('click', _colHeaderClickHandler);
+
+        if (_config.columns[indCol].sortable) {
+          eleCol.addEventListener('click', _colHeaderClickHandler);
+          eleCol.classList.add('sortable');
+        }
 
         _dom.columns.push(eleCol);
         _dom.header.appendChild(eleCol);
@@ -117,22 +126,41 @@
     }
 
     function _colHeaderClickHandler(event) {
-      var indCol = event.target.dataset.index;
+      var eleCol = event.target;
+      var indCol = eleCol.dataset.index;
       var column = _config.columns[indCol];
+
+      if (!column.sortable) {
+        return;
+      }
 
       _state.sortColumns[column.key] = ((_state.sortColumns[column.key] || 0) + 1) % 3;
 
+      console.log('-_dom.columns[indCol]', _dom.columns[indCol]);
+
       if (_state.sortColumns[column.key] === 0) {
         delete _state.sortColumns[column.key];
+
+        eleCol.classList.remove('sortable--desc');
+      } else if (_state.sortColumns[column.key] === SORT_ORDER_ASC) {
+        eleCol.classList.add('sortable--asc');
+      } else {
+        eleCol.classList.remove('sortable--asc');
+        eleCol.classList.add('sortable--desc');
       }
 
+
+      // sort data once
+      _sortData();
+
+      // navigate back to page 1
       _navigateToPage(1);
     }
 
     function _navigateToPage(numPage) {
       var startIndex = (numPage - 1) * _config.perPageLimit;
       var endIndex = (numPage) * _config.perPageLimit;
-      var slicedData = data.slice(startIndex, endIndex);
+      var slicedData = _state.data.slice(startIndex, endIndex);
 
       slicedData.map((item, indRow) => {
         var rowKeyValue = item[_config.rowKey];
@@ -154,6 +182,37 @@
         _cacheData[rowKeyValue].forEach((cellData, indCell) => {
           _dom.cells[indRow][indCell].innerHTML = cellData;
         });
+      });
+    }
+
+    function _sortData() {
+      // console.log('--_state.sortColumns', _state.sortColumns);
+
+      var columnKeys = Object.keys(_state.sortColumns);
+
+      if (columnKeys.length === 0) {
+        _state.data = [...data];
+        return;
+      }
+
+      _state.data = [...data].sort((a, b) => {
+        for (var ind = 0; ind < columnKeys.length; ind++) {
+          var colKey = columnKeys[ind];
+
+          if (a[colKey] === b[colKey]) {
+            continue;
+          }
+
+          // console.log('--cmp', `${a[colKey]} < ${b[colKey]}`)
+
+          if (a[colKey] < b[colKey] && _state.sortColumns[colKey] === SORT_ORDER_ASC) {
+            return -1;
+          }
+
+          return 1;
+        }
+
+        return 0;
       });
     }
 
