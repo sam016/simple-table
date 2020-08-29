@@ -1,7 +1,56 @@
 window.addEventListener('load', function () {
   var DEFAULT_CONFIG = {
-    withSearch: true,
-    withSort: true,
+    hasSorts: true,
+    hasFilters: true,
+    isHeaderFixed: true,
+    paginated: true,
+    perPageLimit: 5,
+    columns: [
+      {
+        label: 'Flag',
+        key: 'flag',
+        transformer: (val) => `<img src="${val}" alt="flag"/>`
+      },
+      {
+        label: 'Name',
+        key: 'name',
+      },
+      {
+        label: 'Native name',
+        key: 'nativeName',
+      },
+      {
+        label: 'Capital',
+        key: 'capital',
+      },
+      {
+        label: 'Region',
+        key: 'region',
+      },
+      {
+        label: 'Population',
+        key: 'population',
+      },
+      {
+        label: 'Lat/Lng',
+        key: 'latlng',
+      },
+      {
+        label: 'Timezones',
+        key: 'timezones',
+        transformer: (val) => val.join(', '),
+      },
+      {
+        label: 'Currencies',
+        key: 'currencies',
+        transformer: (val) => val.map(v.name).join(', '),
+      },
+      {
+        label: 'languages',
+        key: 'name',
+        transformer: (val) => val.map(v.name).join(', '),
+      },
+    ]
   };
 
   // DOM elements
@@ -41,7 +90,7 @@ window.addEventListener('load', function () {
     btnApplyConfig.addEventListener('click', function (e) {
       try {
         var config = JSON.parse(txtPGConfig.value);
-        pgTable = new SimpleTable(pgTableContainer, config);
+        pgTable = new SimpleTable(pgTableContainer, COUNTRIES, config);
       } catch (err) {
         alert('Error occurred while parsing config');
       }
@@ -49,8 +98,8 @@ window.addEventListener('load', function () {
   }
 
   function initTables() {
-    demoTable = new SimpleTable(demoTableContainer, DEFAULT_CONFIG);
-    pgTable = new SimpleTable(pgTableContainer, DEFAULT_CONFIG);
+    demoTable = new SimpleTable(demoTableContainer, COUNTRIES, DEFAULT_CONFIG);
+    pgTable = new SimpleTable(pgTableContainer, COUNTRIES, DEFAULT_CONFIG);
   }
 
   initializeDomVariables();
