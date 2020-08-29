@@ -136,8 +136,6 @@
 
       _state.sortColumns[column.key] = ((_state.sortColumns[column.key] || 0) + 1) % 3;
 
-      console.log('-_dom.columns[indCol]', _dom.columns[indCol]);
-
       if (_state.sortColumns[column.key] === 0) {
         delete _state.sortColumns[column.key];
 
@@ -186,7 +184,6 @@
     }
 
     function _sortData() {
-      // console.log('--_state.sortColumns', _state.sortColumns);
 
       var columnKeys = Object.keys(_state.sortColumns);
 
@@ -203,13 +200,11 @@
             continue;
           }
 
-          // console.log('--cmp', `${a[colKey]} < ${b[colKey]}`)
-
-          if (a[colKey] < b[colKey] && _state.sortColumns[colKey] === SORT_ORDER_ASC) {
-            return -1;
+          if (_state.sortColumns[colKey] === SORT_ORDER_ASC) {
+            return (a[colKey] < b[colKey]) ? -1 : 1;
+          } else {
+            return (a[colKey] > b[colKey]) ? -1 : 1;
           }
-
-          return 1;
         }
 
         return 0;

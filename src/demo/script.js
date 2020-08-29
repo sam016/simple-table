@@ -12,11 +12,13 @@ window.addEventListener('load', function () {
         key: 'flag',
         type: 'img',
         class: 'flag',
+        priority: 1,
       },
       {
         label: 'Name',
         key: 'name',
         sortable: true,
+        priority: 1,
       },
       {
         label: 'Native name',
@@ -26,6 +28,7 @@ window.addEventListener('load', function () {
         label: 'Capital',
         key: 'capital',
         sortable: true,
+        priority: 1,
       },
       {
         label: 'Region',
@@ -51,11 +54,13 @@ window.addEventListener('load', function () {
         label: 'Currencies',
         key: 'currencies',
         transformer: (val) => val.map(v => v.name).join(', '),
+        priority: 1,
       },
       {
         label: 'Languages',
         key: 'languages',
         transformer: (val) => val.map(v => v.name).join(', '),
+        priority: 1,
       },
     ]
   };
