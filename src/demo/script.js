@@ -39,6 +39,7 @@ window.addEventListener('load', function () {
         label: 'Population',
         key: 'population',
         sortable: true,
+        priority: 2,
       },
       {
         label: 'Lat/Lng',

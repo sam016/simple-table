@@ -1,4 +1,3 @@
-
 "use strict";
 
 (function () {
@@ -127,6 +126,10 @@
           eleCol.classList.add('sortable');
         }
 
+        if (_config.columns[indCol].priority) {
+          eleCol.classList.add(`p-${_config.columns[indCol].priority}`);
+        }
+
         _dom.columns.push(eleCol);
         _dom.header.appendChild(eleCol);
       }
@@ -141,6 +144,10 @@
 
         for (var indCol = 0; indCol < _config.columns.length; indCol++) {
           var eleCell = document.createElement('td');
+
+          if (_config.columns[indCol].priority) {
+            eleCell.classList.add(`p-${_config.columns[indCol].priority}`);
+          }
 
           _dom.cells[indRow].push(eleCell);
           eleRow.appendChild(eleCell);
@@ -228,9 +235,9 @@
     }
 
     function _updateColHeaders(colKey) {
-      var allkeys = colKey ? [colKey] : Object.keys(_state.keyToInd);
+      var allKeys = colKey ? [colKey] : Object.keys(_state.keyToInd);
 
-      allkeys.forEach((colKey) => {
+      allKeys.forEach((colKey) => {
         var indCol = _state.keyToInd[colKey];
         var eleCol = _dom.columns[indCol];
 
@@ -357,7 +364,6 @@
     function _btnNavNextPageClickHandler(e) {
       _navigateToPage(_state.currentPage + 1);
     }
-
 
     function reset() {
       _state.sortColumns = {};

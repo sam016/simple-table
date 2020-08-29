@@ -1,4 +1,4 @@
-.simple-table{
+.simple-table table{
   border-collapse: collapse;
   width: 100%;
 }
@@ -27,6 +27,15 @@
 
 .simple-table .hidden{
   display: none;
+}
+
+.simple-table th,.simple-table td {
+  display: none;
+}
+
+.simple-table th.p-1,
+.simple-table td.p-1 {
+  display: table-cell;
 }
 
 .simple-table__pagination {
@@ -79,4 +88,28 @@
     display: block;
   }
 
+  .simple-table th.p-2,
+  .simple-table td.p-2 {
+    display: table-cell;
+  }
+
+}
+
+@media only screen and (min-width: 1024px) {
+  :root {
+    font-size: 14px;
+  }
+
+  #txtPGConfig {
+    width: 40%;
+  }
+
+  .simple-table__pagination button.nav-page:not(.hidden) {
+    display: block;
+  }
+
+  .simple-table th,
+  .simple-table td {
+    display: table-cell;
+  }
 }
