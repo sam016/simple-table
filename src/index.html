@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple table</title>
+  <link rel="stylesheet" href="./demo/style.css">
+  <link rel="stylesheet" href="./simple-table/style.css">
+</head>
+
+<body>
+  <div id="main-container">
+    <header>
+      <h1>Simple table</h1>
+    </header>
+
+    <div class="demo-container">
+      <div class="heading">Demo</div>
+      <div class="control-box">
+        <button type="button" id="btnResetDemoTable">Reset Table</button>
+      </div>
+      <div id="demo-table-container"></div>
+    </div>
+
+    <div class="demo-container">
+      <div class="heading">Playground</div>
+      <div class="control-box">
+        <textarea id="txtPGConfig" rows="6"></textarea>
+        <br/>
+        <button type="button" id="btnResetPGTable">Reset Table</button>
+        <button type="button" id="btnApplyConfig">Apply config</button>
+      </div>
+      <div id="pg-table-container"></div>
+    </div>
+  </div>
+
+  <script src="./simple-table/script.js"></script>
+  <script src="./demo/script.js"></script>
+</body>
+
+</html>

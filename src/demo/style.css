@@ -1,0 +1,52 @@
+
+:root {
+  font-size: 10px;
+}
+
+html {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+#main-container {
+  max-width: 1000px;
+  margin: auto;
+}
+
+#main-container > header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.demo-container {
+
+}
+
+.demo-container + .demo-container {
+  margin-top: 2rem;
+}
+
+.demo-container > .heading {
+  font-size: 1.25rem;
+  border-bottom: 1px solid #EFEFEF;
+  margin-bottom: 1rem;
+}
+
+#txtPGConfig {
+  width: 100%;
+}
+
+@media only screen and (min-width: 600px) {
+  :root {
+    font-size: 12px;
+  }
+}
+
+@media only screen and (min-width: 780px) {
+  :root {
+    font-size: 14px;
+  }
+
+  #txtPGConfig {
+    width: 40%;
+  }
+}
