@@ -5,11 +5,13 @@ window.addEventListener('load', function () {
     isHeaderFixed: true,
     paginated: true,
     perPageLimit: 5,
+    rowKey: 'alpha3Code',
     columns: [
       {
         label: 'Flag',
         key: 'flag',
-        transformer: (val) => `<img src="${val}" alt="flag"/>`
+        type: 'img',
+        class: 'flag',
       },
       {
         label: 'Name',
@@ -43,12 +45,12 @@ window.addEventListener('load', function () {
       {
         label: 'Currencies',
         key: 'currencies',
-        transformer: (val) => val.map(v.name).join(', '),
+        transformer: (val) => val.map(v => v.name).join(', '),
       },
       {
-        label: 'languages',
-        key: 'name',
-        transformer: (val) => val.map(v.name).join(', '),
+        label: 'Languages',
+        key: 'languages',
+        transformer: (val) => val.map(v => v.name).join(', '),
       },
     ]
   };

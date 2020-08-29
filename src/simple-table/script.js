@@ -10,6 +10,12 @@
     pagination: false,
     perPageLimit: 0,
     columns: [],
+    rowKey: 'id',
+  };
+
+  var SORT_ORDER = {
+    1: 'asc',
+    2: 'desc',
   };
 
   function SimpleTable(element, data, config) {
@@ -23,7 +29,8 @@
       isHeaderFixed: config.isHeaderFixed || DEFAULT_CONFIG.isHeaderFixed,
       pagination: config.pagination || DEFAULT_CONFIG.pagination,
       perPageLimit: config.perPageLimit || DEFAULT_CONFIG.perPageLimit,
-      columns: config.columns || DEFAULT_CONFIG.columns,
+      columns: [...config.columns] || DEFAULT_CONFIG.columns,
+      rowKey: config.rowKey || DEFAULT_CONFIG.rowKey,
     };
 
     var _state = {
@@ -32,10 +39,9 @@
       totalCount: 0,
       canNavigatePrev: false,
       canNavigateNext: false,
-      columns: [],
+      // columns: [],
 
-      sortColumns: [],
-      sortOrders: [],
+      sortColumns: {},
     };
 
     var _dom = {
@@ -47,9 +53,14 @@
       cells: { 0: [] },
     };
 
+    var _cacheData = {
+    };
+
     function _init() {
       _initState();
       _initDom();
+
+      _navigateToPage(1);
     }
 
     function _initState() {
@@ -58,10 +69,9 @@
       _state.totalPages = Math.ceil(data.length / _config.perPageLimit);
       _state.canNavigatePrev = false;
       _state.canNavigateNext = _state.totalPages > 1;
-      _state.columns = _config.columns.map(c => c.label);
     }
 
-    // Creates the DOM elements
+    // Creates the DOM elements and attaches events
     function _initDom() {
       _dom.table = document.createElement('table');
       _dom.table.classList.add('simple-table');
@@ -74,10 +84,12 @@
 
       _dom.columns = _config.columns.map(() => document.createElement('th'));
 
-      for (var indCol = 0; indCol < _state.columns.length; indCol++) {
+      for (var indCol = 0; indCol < _config.columns.length; indCol++) {
         var eleCol = document.createElement('th');
 
-        eleCol.innerHTML = _state.columns[indCol];
+        eleCol.innerHTML = _config.columns[indCol].label;
+        eleCol.dataset.index = indCol;
+        eleCol.addEventListener('click', _colHeaderClickHandler);
 
         _dom.columns.push(eleCol);
         _dom.header.appendChild(eleCol);
@@ -91,7 +103,7 @@
 
         _dom.cells[indRow] = [];
 
-        for (var indCol = 0; indCol < _state.columns.length; indCol++) {
+        for (var indCol = 0; indCol < _config.columns.length; indCol++) {
           var eleCell = document.createElement('td');
 
           _dom.cells[indRow].push(eleCell);
@@ -102,6 +114,47 @@
       // clean out the prev anything
       element.innerHTML = '';
       element.appendChild(_dom.table);
+    }
+
+    function _colHeaderClickHandler(event) {
+      var indCol = event.target.dataset.index;
+      var column = _config.columns[indCol];
+
+      _state.sortColumns[column.key] = ((_state.sortColumns[column.key] || 0) + 1) % 3;
+
+      if (_state.sortColumns[column.key] === 0) {
+        delete _state.sortColumns[column.key];
+      }
+
+      _navigateToPage(1);
+    }
+
+    function _navigateToPage(numPage) {
+      var startIndex = (numPage - 1) * _config.perPageLimit;
+      var endIndex = (numPage) * _config.perPageLimit;
+      var slicedData = data.slice(startIndex, endIndex);
+
+      slicedData.map((item, indRow) => {
+        var rowKeyValue = item[_config.rowKey];
+
+        if (!_cacheData[rowKeyValue]) {
+          _cacheData[rowKeyValue] = _config.columns.map(col => {
+            if (col.transformer) {
+              return col.transformer(item[col.key])
+            }
+
+            if (col.type === 'img') {
+              return `<img class="${col.class || ''}" src="${item[col.key]}" alt="${col.key}"/>`
+            }
+
+            return item[col.key];
+          });
+        }
+
+        _cacheData[rowKeyValue].forEach((cellData, indCell) => {
+          _dom.cells[indRow][indCell].innerHTML = cellData;
+        });
+      });
     }
 
     function reset() {
