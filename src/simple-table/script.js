@@ -30,8 +30,8 @@
       hasSorts: config.hasSorts || DEFAULT_CONFIG.hasSorts,
       hasFilters: config.hasFilters || DEFAULT_CONFIG.hasFilters,
       isHeaderFixed: config.isHeaderFixed || DEFAULT_CONFIG.isHeaderFixed,
-      pagination: config.pagination || DEFAULT_CONFIG.pagination,
-      perPageLimit: config.perPageLimit || DEFAULT_CONFIG.perPageLimit,
+      paginated: config.paginated || DEFAULT_CONFIG.paginated,
+      perPageLimit: config.paginated === false ? data.length : (config.perPageLimit || DEFAULT_CONFIG.perPageLimit),
       columns: [...config.columns] || DEFAULT_CONFIG.columns,
       rowKey: config.rowKey || DEFAULT_CONFIG.rowKey,
     };
@@ -46,19 +46,28 @@
       // columns: [],
 
       sortColumns: {},
+      keyToInd: {},
     };
 
     var _dom = {
+      root: null,
       table: null,
       header: null,
       columns: [],
       body: null,
       rows: [],
       cells: { 0: [] },
+      pagination: null,
+      pagePrevButtons: [],
+      pageNextButtons: [],
+      pageNavLastButton: null,
+      pageNavFirstButton: null,
+      pageNavPrevButton: null,
+      pageNavNextButton: null,
+      pageCurrent: null,
     };
 
-    var _cacheData = {
-    };
+    var _cacheData = {};
 
     function _init() {
       _initState();
@@ -74,20 +83,38 @@
       _state.canNavigatePrev = false;
       _state.canNavigateNext = _state.totalPages > 1;
       _state.data = data;
+      _state.keyToInd = _config.columns.reduce((prev, item, ind) => {
+        prev[item.key] = ind;
+        return prev;
+      }, {});
     }
 
     // Creates the DOM elements and attaches events
     function _initDom() {
+      _createTable();
+      _createPagination();
+
+      // clean out the prev anything
+      element.innerHTML = '';
+
+      // create one simple-table
+      _dom.root = document.createElement('div');
+      _dom.root.classList.add('simple-table');
+
+      _dom.root.appendChild(_dom.table);
+      _dom.root.appendChild(_dom.pagination);
+
+      element.appendChild(_dom.root);
+    }
+
+    function _createTable() {
       _dom.table = document.createElement('table');
-      _dom.table.classList.add('simple-table');
 
       _dom.header = document.createElement('thead');
       _dom.table.appendChild(_dom.header);
 
       _dom.body = document.createElement('tbody');
       _dom.table.appendChild(_dom.body);
-
-      _dom.columns = _config.columns.map(() => document.createElement('th'));
 
       for (var indCol = 0; indCol < _config.columns.length; indCol++) {
         var eleCol = document.createElement('th');
@@ -119,10 +146,60 @@
           eleRow.appendChild(eleCell);
         }
       }
+    }
 
-      // clean out the prev anything
-      element.innerHTML = '';
-      element.appendChild(_dom.table);
+    function _createPagination() {
+      _dom.pagination = document.createElement('div');
+      _dom.pagination.classList.add('simple-table__pagination');
+
+      _dom.pageNavFirstButton = document.createElement('button');
+      _dom.pageNavFirstButton.addEventListener('click', _btnNavFirstPageClickHandler);
+      _dom.pageNavFirstButton.innerText = "First";
+
+      _dom.pageNavLastButton = document.createElement('button');
+      _dom.pageNavLastButton.addEventListener('click', _btnNavLastPageClickHandler);
+      _dom.pageNavLastButton.innerText = "Last";
+
+      _dom.pageNavPrevButton = document.createElement('button');
+      _dom.pageNavPrevButton.addEventListener('click', _btnNavPrevPageClickHandler);
+      _dom.pageNavPrevButton.innerText = "Previous";
+
+      _dom.pageNavNextButton = document.createElement('button');
+      _dom.pageNavNextButton.addEventListener('click', _btnNavNextPageClickHandler);
+      _dom.pageNavNextButton.innerText = "Next";
+
+      _dom.pageCurrent = document.createElement('span');
+      _dom.pageCurrent.classList.add('current');
+      _dom.pageCurrent.innerText = '1';
+
+      for (var ind = 0; ind < 5; ind++) {
+        var elePrevButton = document.createElement('button');
+        elePrevButton.classList.add('nav-page');
+        elePrevButton.classList.add('hidden');
+        elePrevButton.addEventListener('click', _btnNavToPageClickHandler);
+
+        _dom.pagePrevButtons.push(elePrevButton);
+
+
+        var eleNextButton = document.createElement('button');
+        eleNextButton.classList.add('nav-page');
+        eleNextButton.classList.add('hidden');
+        eleNextButton.addEventListener('click', _btnNavToPageClickHandler);
+
+        _dom.pageNextButtons.push(eleNextButton);
+      }
+
+      _dom.pagination.appendChild(_dom.pageNavFirstButton);
+      _dom.pagination.appendChild(_dom.pageNavPrevButton);
+
+      _dom.pagePrevButtons.forEach(btn => _dom.pagination.appendChild(btn));
+
+      _dom.pagination.appendChild(_dom.pageCurrent);
+
+      _dom.pageNextButtons.forEach(btn => _dom.pagination.appendChild(btn));
+
+      _dom.pagination.appendChild(_dom.pageNavNextButton);
+      _dom.pagination.appendChild(_dom.pageNavLastButton);
     }
 
     function _colHeaderClickHandler(event) {
@@ -134,28 +211,51 @@
         return;
       }
 
+      // sorting state 1 (ASC) > 2 (DESC) > 0 (no sort)
       _state.sortColumns[column.key] = ((_state.sortColumns[column.key] || 0) + 1) % 3;
 
       if (_state.sortColumns[column.key] === 0) {
         delete _state.sortColumns[column.key];
-
-        eleCol.classList.remove('sortable--desc');
-      } else if (_state.sortColumns[column.key] === SORT_ORDER_ASC) {
-        eleCol.classList.add('sortable--asc');
-      } else {
-        eleCol.classList.remove('sortable--asc');
-        eleCol.classList.add('sortable--desc');
       }
-
 
       // sort data once
       _sortData();
+
+      _updateColHeaders(column.key);
 
       // navigate back to page 1
       _navigateToPage(1);
     }
 
+    function _updateColHeaders(colKey) {
+      var allkeys = colKey ? [colKey] : Object.keys(_state.keyToInd);
+
+      console.log('--allkeys', allkeys);
+
+      allkeys.forEach((colKey) => {
+        console.log('--colKey', colKey);
+        var indCol = _state.keyToInd[colKey];
+        var eleCol = _dom.columns[indCol];
+
+        if (!_state.sortColumns[colKey]) {
+          eleCol.classList.remove('sortable--desc');
+          eleCol.classList.remove('sortable--asc');
+        } else if (_state.sortColumns[colKey] === SORT_ORDER_ASC) {
+          eleCol.classList.add('sortable--asc');
+        } else {
+          eleCol.classList.remove('sortable--asc');
+          eleCol.classList.add('sortable--desc');
+        }
+      });
+    }
+
     function _navigateToPage(numPage) {
+      if (!numPage) {
+        return;
+      }
+
+      _state.currentPage = numPage;
+
       var startIndex = (numPage - 1) * _config.perPageLimit;
       var endIndex = (numPage) * _config.perPageLimit;
       var slicedData = _state.data.slice(startIndex, endIndex);
@@ -181,6 +281,37 @@
           _dom.cells[indRow][indCell].innerHTML = cellData;
         });
       });
+
+      _updatePagination();
+    }
+
+    function _updatePagination() {
+      var prevPagesAvailable = _state.currentPage > 1 ? Math.min(_state.currentPage - 1, 5) : 0;
+      var nextPagesAvailable = _state.currentPage < _state.totalPages ? Math.min(_state.totalPages - _state.currentPage, 5) : 0;
+
+      for (var ind = 1; ind <= 5; ind++) {
+        if (ind <= prevPagesAvailable) {
+          _dom.pagePrevButtons[ind - 1].innerText = _state.currentPage - (prevPagesAvailable - ind) - 1;
+          _dom.pagePrevButtons[ind - 1].dataset.index = _state.currentPage - (prevPagesAvailable - ind) - 1;
+          _dom.pagePrevButtons[ind - 1].classList.remove('hidden');
+        } else {
+          _dom.pagePrevButtons[ind - 1].classList.add('hidden');
+        }
+
+        if (ind <= nextPagesAvailable) {
+          _dom.pageNextButtons[ind - 1].innerText = _state.currentPage + ind;
+          _dom.pageNextButtons[ind - 1].dataset.index = _state.currentPage + ind;
+          _dom.pageNextButtons[ind - 1].classList.remove('hidden');
+        } else {
+          _dom.pageNextButtons[ind - 1].classList.add('hidden');
+        }
+      }
+
+      _dom.pageCurrent.innerText = _state.currentPage;
+      _dom.pageNavFirstButton.disabled = _state.currentPage === 1;
+      _dom.pageNavPrevButton.disabled = _state.currentPage === 1;
+      _dom.pageNavNextButton.disabled = _state.currentPage === _state.totalPages;
+      _dom.pageNavLastButton.disabled = _state.currentPage === _state.totalPages;
     }
 
     function _sortData() {
@@ -211,8 +342,37 @@
       });
     }
 
-    function reset() {
+    function _btnNavFirstPageClickHandler(e) {
+      _navigateToPage(1);
+    }
 
+    function _btnNavLastPageClickHandler(e) {
+      _navigateToPage(_state.totalPages);
+    }
+
+    function _btnNavToPageClickHandler(e) {
+      _navigateToPage(+e.target.dataset.index);
+    }
+
+    function _btnNavPrevPageClickHandler(e) {
+      _navigateToPage(_state.currentPage - 1);
+    }
+    function _btnNavNextPageClickHandler(e) {
+      _navigateToPage(_state.currentPage + 1);
+    }
+
+
+    function reset() {
+      _state.sortColumns = {};
+
+      // reset the col header state
+      _updateColHeaders();
+
+      // sort data
+      _sortData();
+
+      // navigate to first page
+      _navigateToPage(1);
     }
 
     _init();

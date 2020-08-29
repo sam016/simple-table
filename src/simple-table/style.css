@@ -4,7 +4,7 @@
 }
 
 .simple-table th, .simple-table td{
-  border: 1px solid black;
+  border: 1px solid #AAA;
   padding: 0.2rem 0.5rem;
 }
 
@@ -23,4 +23,60 @@
 
 .simple-table th.sortable--desc{
   background-image: url('./images/sortable-desc.svg');
+}
+
+.simple-table .hidden{
+  display: none;
+}
+
+.simple-table__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.simple-table__pagination .current {
+  border-radius: 2.5rem;
+  background: dodgerblue;
+  color: white;
+  display: inline-block;
+  width: 2.5rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  text-align: center;
+  margin: 0 0.5rem;
+}
+
+.simple-table__pagination button {
+  cursor: pointer;
+}
+
+.simple-table__pagination button:disabled {
+  cursor: default;
+}
+
+.simple-table__pagination button.nav-page {
+  display: none;
+}
+
+@media only screen and (min-width: 600px) {
+  :root {
+    font-size: 12px;
+  }
+}
+
+@media only screen and (min-width: 780px) {
+  :root {
+    font-size: 14px;
+  }
+
+  #txtPGConfig {
+    width: 40%;
+  }
+
+  .simple-table__pagination button.nav-page:not(.hidden) {
+    display: block;
+  }
+
 }
