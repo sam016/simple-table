@@ -230,10 +230,7 @@
     function _updateColHeaders(colKey) {
       var allkeys = colKey ? [colKey] : Object.keys(_state.keyToInd);
 
-      console.log('--allkeys', allkeys);
-
       allkeys.forEach((colKey) => {
-        console.log('--colKey', colKey);
         var indCol = _state.keyToInd[colKey];
         var eleCol = _dom.columns[indCol];
 
